@@ -1,5 +1,9 @@
 {
     "appService.defaultWebAppToDeploy": "/subscriptions/1abb0399-ed81-4362-b047-86c634af1914/resourceGroups/evolvoResurceGroup/providers/Microsoft.Web/sites/evolvoapi",
     "editor.acceptSuggestionOnEnter": "on",
-    "appService.deploySubpath": "."
+    "appService.deploySubpath": ".",
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ]
 }

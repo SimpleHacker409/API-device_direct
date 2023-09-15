@@ -11,10 +11,10 @@ var iothubClient = require("azure-iothub").Client;
 var client = iothubClient.fromConnectionString(
   process.env.EVOLVO_IOTHUB
 )
+
 const registry = iothub.Registry.fromConnectionString(process.env.EVOLVO_IOTHUB);
 
 app.get('/',(req,res) => {
-    getDeviceRegistery()
     res.sendFile(__dirname + '/index.html')
 })
 
@@ -157,6 +157,21 @@ app.post('/api/alarm_off', async (req, res) => {
     }
 })
 
+app.get('/api/device_state',async (req, res) => {
+    const query = registry.createQuery("SELECT * FROM devices WHERE status = 'enabled'", 100);
+
+    query.nextAsTwin(function (err, results) {
+      if (err) {
+        res.status(400).send('Error querying twins: ' + err.toString())
+      } else {
+        var deviceState = results.map(function (twin) {
+            return {'deviceId':twin.deviceId,'state':twin.connectionState,'status':twin.status}
+        });
+        res.status(200).send(deviceState)
+      }
+    });
+}) 
+
 async function deviceMethoFunction(device_id, methodParams) {
     return new Promise((resolve, reject) => {
       client.invokeDeviceMethod(device_id, methodParams, (err, result) => {
@@ -167,25 +182,6 @@ async function deviceMethoFunction(device_id, methodParams) {
         }
       })
     });
-  }
-
-  async function getDeviceRegistery(){
-    console.log("getDeviceRegistery");
-    const query = registry.createQuery("SELECT * FROM devices WHERE status = 'enabled'", 100);
-
-    query.nextAsTwin(function (err, results) {
-      if (err) {
-        console.error('Error querying twins: ' + err.toString());
-      } else {
-        results.forEach(function (twin) {
-          console.log(`Device ID: ${twin.deviceId}`);
-          console.log(`Status: ${twin.status}`);
-          console.log(`Connection State: ${twin.connectionState}`);
-          console.log('---');
-        });
-      }
-    });
-    
   }
 
 console.log("listing to " + process.env.PORT);
