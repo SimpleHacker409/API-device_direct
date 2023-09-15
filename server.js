@@ -5,13 +5,16 @@ const app = express()
 
 //For parsing application/json
 app.use(express.json())
+var iothub = require("azure-iothub");
 
 var iothubClient = require("azure-iothub").Client;
 var client = iothubClient.fromConnectionString(
   process.env.EVOLVO_IOTHUB
 )
+const registry = iothub.Registry.fromConnectionString(process.env.EVOLVO_IOTHUB);
 
 app.get('/',(req,res) => {
+    getDeviceRegistery()
     res.sendFile(__dirname + '/index.html')
 })
 
@@ -164,6 +167,25 @@ async function deviceMethoFunction(device_id, methodParams) {
         }
       })
     });
+  }
+
+  async function getDeviceRegistery(){
+    console.log("getDeviceRegistery");
+    const query = registry.createQuery("SELECT * FROM devices WHERE status = 'enabled'", 100);
+
+    query.nextAsTwin(function (err, results) {
+      if (err) {
+        console.error('Error querying twins: ' + err.toString());
+      } else {
+        results.forEach(function (twin) {
+          console.log(`Device ID: ${twin.deviceId}`);
+          console.log(`Status: ${twin.status}`);
+          console.log(`Connection State: ${twin.connectionState}`);
+          console.log('---');
+        });
+      }
+    });
+    
   }
 
 console.log("listing to " + process.env.PORT);
