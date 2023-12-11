@@ -1,10 +1,12 @@
 require('dotenv').config();
+const cors = require('cors')
 
 const express = require('express')
 const app = express()
 
 //For parsing application/json
 app.use(express.json())
+app.use(cors())
 var iothub = require("azure-iothub");
 
 var iothubClient = require("azure-iothub").Client;
@@ -52,7 +54,7 @@ app.post('/api/unlock', async (req, res) => {
     } 
     catch(err)
     {
-        console.log("error");
+        console.log(err);
         res.status(400).send({error: err})
     }
 })
